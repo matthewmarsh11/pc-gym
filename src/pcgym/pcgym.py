@@ -508,6 +508,19 @@ class make_env(gym.Env):
         """
 
         self.con_i = 0
+        
+        if self.normalise_a is True:
+            input = (input + 1) * (
+                self.env_params["a_space"]["high"] - self.env_params["a_space"]["low"]
+            ) / 2 + self.env_params["a_space"]["low"]
+        
+        if self.normalise_o is True:
+            state = (
+                (state + 1)
+                * (self.observation_space_base.high - self.observation_space_base.low)
+                / 2
+                + self.observation_space_base.low
+            )
         constraint_violated = (
             self.con_checker(state,  input)
         )  # Check both inputs and states
