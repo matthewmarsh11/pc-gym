@@ -70,6 +70,83 @@ class cstr(BaseModel):
             return dxdt
 
 @dataclass(frozen=False, kw_only=True)
+class complex_cstr:
+    """
+    CSTR Model with Multiple Reactions
+    
+    Attributes: 
+    
+    rho (float): Density of the liquid (kg/m3)
+    Cp (float): Heat capacity of the liquid (J/kg K)
+    UA (float): Heat transfer coefficient (W/K)
+    mdelH_AB (float): Heat of reaction for reaction A -> B (J/mol)
+    EoverR_AB (float): Activation energy for reaction A -> B (K)
+    k0_A (float): Pre-exponential factor for reaction A -> B (1/s)
+    Fout (float): Outlet flowrate (m3/s)
+    mdelH_BC (float): Heat of reaction for reaction B -> C (J/mol)
+    EoverR_BC (float): Activation energy for reaction B -> C (K)
+    k0_B (float): Pre-exponential factor for reaction B -> C (1/s)
+    
+    """
+    rho = 1000
+    Cp = 0.239
+    UA = 5e4
+    mdelH_AB = 5e4
+    EoverR_AB = 8750
+    k0_A = 7.2e10
+    Fout = 100
+    
+    mdelH_BC = 5e4
+    EoverR_BC = 10750
+    k0_B = 8.2e10
+    int_method: str = 'jax'
+    states: list = None
+    inputs: list = None
+    disturbances: list = None
+    uncertainties: dict = None
+    
+    def __post_init__(self):
+        self.states = ["Ca", "Cb", "Cc", "T", "V"]
+        self.inputs = ["Tc", "Fin"]
+        self.disturbances = ["Ti", "Caf"]
+        
+    def __call__(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
+        Ca, Cb, Cc, T, V = x[0], x[1], x[2], x[3], x[4]
+        if self.int_method == "jax":
+            if u.shape == (2,):
+                Tc, Fin = u[0], u[1]
+            else:
+                Tc, Fin, Ti, Caf = u[0], u[1], u[2], u[3]
+                
+            rA = self.k0_A * jnp.exp(-self.EoverR_AB / T) * Ca
+            rB = self.k0_B * jnp.exp(-self.EoverR_BC / T) * Cb
+            dxdt = jnp.array([
+                (Fin*Caf - self.Fout*Ca)/V - rA, # Concentration of A
+                rA - rB - self.Fout*Cb/V, # Concentration of B
+                rB - self.Fout*Cc/V, # Concentration of C
+                (Fin / V) * (Ti - T) + (self.mdelH_AB * rA + self.mdelH_BC * rB) / (self.rho * self.Cp) + self.UA * (Tc - T) / (self.rho * self.Cp * V), # Temperature Derivative
+                Fin - self.Fout, # Volume Derivative
+            ])
+            return dxdt
+        else:
+            if u.shape == (2,1):
+                Tc, Fin = u[0], u[1]
+            else:
+                Tc, Fin, Ti, Caf = u[0], u[1], u[2], u[3]
+                
+            rA = self.k0_A * np.exp(-self.EoverR_AB / T) * Ca
+            rB = self.k0_B * np.exp(-self.EoverR_BC / T) * Cb
+            dxdt = [
+                (Fin*Caf - self.Fout*Ca)/V - rA, # Concentration of A
+                rA - rB - self.Fout*Cb/V, # Concentration of B
+                rB - self.Fout*Cc/V, # Concentration of C
+                (Fin / V) * (Ti - T) + (self.mdelH_AB * rA + self.mdelH_BC * rB) / (self.rho * self.Cp) + self.UA * (Tc - T) / (self.rho * self.Cp * V), # Temperature Derivative
+                Fin - self.Fout, # Volume Derivative
+            ]
+            return dxdt
+    
+
+@dataclass(frozen=False, kw_only=True)
 class first_order_system:
     """
     First-order system model.
