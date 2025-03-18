@@ -118,8 +118,8 @@ class complex_cstr(BaseModel):
             else:
                 Tc, Fin, Ti, Caf = u[0], u[1], u[2], u[3]
                 
-            rA = self.k0_A * jnp.exp(-self.EoverR_AB / T) * Ca
-            rB = self.k0_B * jnp.exp(-self.EoverR_BC / T) * Cb
+            rA = self.k0_A * jnp.exp(-self.EAoverR_AB / T) * Ca
+            rB = self.k0_B * jnp.exp(-self.EAoverR_BC / T) * Cb
             dxdt = jnp.array([
                 (Fin*Caf - self.Fout*Ca)/V - rA, # Concentration of A
                 rA - rB - self.Fout*Cb/V, # Concentration of B
@@ -134,8 +134,8 @@ class complex_cstr(BaseModel):
             else:
                 Tc, Fin, Ti, Caf = u[0], u[1], u[2], u[3]
                 
-            rA = self.k0_A * np.exp(-self.EoverR_AB / T) * Ca
-            rB = self.k0_B * np.exp(-self.EoverR_BC / T) * Cb
+            rA = self.k0_A * np.exp(-self.EAoverR_AB / T) * Ca
+            rB = self.k0_B * np.exp(-self.EAoverR_BC / T) * Cb
             dxdt = [
                 (Fin*Caf - self.Fout*Ca)/V - rA, # Concentration of A
                 rA - rB - self.Fout*Cb/V, # Concentration of B
