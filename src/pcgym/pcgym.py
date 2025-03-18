@@ -3,6 +3,7 @@ import gymnasium as gym
 from gymnasium import spaces
 from pcgym.model_classes import (
     cstr,
+    complex_cstr,
     first_order_system,
     multistage_extraction,
     nonsmooth_control,
@@ -120,6 +121,7 @@ class make_env(gym.Env):
     def _initialize_model(self):
         model_mapping = {
             "cstr": cstr,
+            "complex_cstr": complex_cstr,
             "first_order_system": first_order_system,
             "nonsmooth_control": nonsmooth_control,
             "multistage_extraction": multistage_extraction,
