@@ -70,7 +70,7 @@ class cstr(BaseModel):
             return dxdt
 
 @dataclass(frozen=False, kw_only=True)
-class complex_cstr:
+class complex_cstr(BaseModel):
     """
     CSTR Model with Multiple Reactions
     
@@ -92,12 +92,12 @@ class complex_cstr:
     Cp = 0.239
     UA = 5e4
     mdelH_AB = 5e4
-    EoverR_AB = 8750
+    EAoverR_AB = 8750
     k0_A = 7.2e10
     Fout = 100
     
     mdelH_BC = 5e4
-    EoverR_BC = 10750
+    EAoverR_BC = 10750
     k0_B = 8.2e10
     int_method: str = 'jax'
     states: list = None
@@ -144,7 +144,6 @@ class complex_cstr:
                 Fin - self.Fout, # Volume Derivative
             ]
             return dxdt
-    
 
 @dataclass(frozen=False, kw_only=True)
 class first_order_system:
